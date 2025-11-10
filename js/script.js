@@ -1,14 +1,33 @@
+function esEmailValido(email) {
+  const regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+  return regex.test(email);
+}
+
+function cargarPersonasDesdeLocalStorage() {
+  const personasGuardadas = localStorage.getItem("personas");
+  if (personasGuardadas) {
+    return JSON.parse(personasGuardadas);
+  }
+  return [
+    {
+      nombre: "Juan Perez",
+      edad: 18,
+      email: "juan.perez@example.com",
+    },
+    {
+      nombre: "Maria Loza",
+      edad: 21,
+      email: "maria.loza@example.com",
+    },
+  ];
+}
+
+function guardarPersonasEnLocalStorage() {
+  localStorage.setItem("personas", JSON.stringify(personas));
+}
+
 //Inicializamos nuestro arreglo de personas con dos objetos
-const personas = [
-  {
-    nombre: "Juan Perez",
-    edad: 18,
-  },
-  {
-    nombre: "Maria Loza",
-    edad: 21,
-  },
-];
+let personas = cargarPersonasDesdeLocalStorage();
 
 function agregarPersona() {
   //Obtenemos el elemento para mostrar un error del nombre
@@ -21,11 +40,18 @@ function agregarPersona() {
   //borramos el contenido del elemento
   msgErrorEdad.innerHTML = "";
 
+  //Obtenemos el elemento para mostrar un error del email
+  const msgErrorEmail = document.querySelector("#msg-error-email");
+  //borramos el contenido del elemento
+  msgErrorEmail.innerHTML = "";
+
   //Obtenemos el input donde se ingresa el nombre
   const inputNombre = document.querySelector("#input-nombre");
 
   //Obtenemos el input donde se ingresa la edad
   const inputEdad = document.querySelector("#input-edad");
+
+  const inputEmail = document.querySelector("#input-email");
 
   //Creamos una variable que indica si el formulario tiene error
   //Inicialmente suponemos que el fomulario NO tiene error
@@ -57,6 +83,21 @@ function agregarPersona() {
     hayError = true;
   }
 
+  //Obtenemos el valor del input y le quitamos los espacios del inicio y el final
+  const email = inputEmail.value.trim();
+  //Validamos que si el valor del email esta vacio
+  if (email === "") {
+    //De ser asi, colocamos el mensaje de error al contenido del elemento para mostrar el error
+    msgErrorEmail.innerHTML = "Debe ingresar un email";
+    //Le asigamos el valor true indicando que el formulario tiene error
+    hayError = true;
+  } else if (!esEmailValido(email)) {
+    //De ser asi, colocamos el mensaje de error al contenido del elemento para mostrar el error
+    msgErrorEmail.innerHTML = "Debe ingresar un email válido";
+    //Le asigamos el valor true indicando que el formulario tiene error
+    hayError = true;
+  }
+
   //Si el formulario tiene algun error (valores invalidos)
   if (hayError) {
     //Es lo mismo que escribir hayError === true
@@ -70,6 +111,7 @@ function agregarPersona() {
   const nuevaPersona = {
     nombre: nombre,
     edad: edad,
+    email: email,
   };
 
   //Ingresamos el nuevo objeto persona dentro del arreglo
@@ -77,6 +119,9 @@ function agregarPersona() {
   //Limpiamos los inputs
   inputNombre.value = "";
   inputEdad.value = "";
+  inputEmail.value = "";
+
+  guardarPersonasEnLocalStorage();
 
   //Actualizamos la tabla de personas para reflejar los cambios en el arreglo
   actualizarLista();
@@ -95,6 +140,7 @@ function eliminar(i) {
   //Si la respuesta es SI, eliminamos la persona que se encuentra en el indice del arreglo
   //que se pasó por parametro a la funcion
   personas.splice(i, 1);
+  guardarPersonasEnLocalStorage();
   //Actualizamos la tabla de personas para reflejar los cambios en el arreglo
   actualizarLista();
 }
@@ -107,7 +153,7 @@ function actualizarLista() {
     //El conenido de la tabla será un mensaje que indique que no hay personas registrados
     listaNombresHtml.innerHTML = `
             <tr>
-                <td colspan="3">No hay personas registradas</td>
+                <td colspan="4">No hay personas registradas</td>
             </tr>`;
     return;
   }
@@ -134,6 +180,8 @@ function actualizarLista() {
       persona.nombre +
       "</td><td>" +
       persona.edad +
+      "</td><td>" +
+      persona.email +
       "</td></tr>";
   }
 
